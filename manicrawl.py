@@ -105,7 +105,7 @@ def main():
 
     years = [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=min(5, years)) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=min(5, len(years))) as executor:
         future_to_year = {executor.submit(crawl_year, year): year for year in years}
         for future in concurrent.futures.as_completed(future_to_year):
             year = future_to_year[future]
