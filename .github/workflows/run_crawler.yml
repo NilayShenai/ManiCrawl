@@ -24,29 +24,33 @@ jobs:
           python -m pip install --upgrade pip
           pip install selenium
 
-      - name: Install Google Chrome
-        run: |
+      -  name: Install Google Chrome
+         run: |
           wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
           sudo apt update
           sudo apt install -y ./google-chrome-stable_current_amd64.deb
-        shell: bash
+          google-chrome --version  # Verify it's installed
 
       - name: Install matching ChromeDriver
         run: |
-          CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+')
+          CHROME_VERSION=$(google-chrome --version | sed -E 's/[^0-9]*([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          echo "Detected Chrome version: $CHROME_VERSION"
+
           DRIVER_JSON=$(curl -s https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json)
           DRIVER_VERSION=$(echo "$DRIVER_JSON" | grep -B1 "$CHROME_VERSION" | grep '"version"' | head -1 | cut -d '"' -f4)
 
           if [ -z "$DRIVER_VERSION" ]; then
-            echo "Failed to detect compatible ChromeDriver version"
+            echo "Failed to detect compatible ChromeDriver version for Chrome $CHROME_VERSION"
             exit 1
           fi
 
+          echo "Installing ChromeDriver version: $DRIVER_VERSION"
           wget -q "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$DRIVER_VERSION/linux64/chromedriver-linux64.zip"
           unzip chromedriver-linux64.zip
           sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
           sudo chmod +x /usr/local/bin/chromedriver
         shell: bash
+
 
       - name: Run crawler script
         run: python manicrawl.py
